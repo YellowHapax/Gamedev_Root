@@ -7,6 +7,7 @@ from pathlib import Path
 from towergen import HamiltonianWeights, ProgramGraph, generate
 from towergen.circulation import heuristic_path, held_karp, path_cost
 from towergen.hamiltonian import convolve, gradient, initial_state, potential
+from towergen.plan import Rect
 
 EXAMPLE = Path(__file__).resolve().parent.parent / "examples" / "wizard_tower.json"
 
@@ -84,13 +85,69 @@ class BlueprintTests(unittest.TestCase):
         floors = [self.bp.room(r).floor for r in self.bp.route]
         self.assertEqual(floors, sorted(floors))
 
-    def test_wedges_do_not_overlap_within_floor(self):
+    def _footprints(self, f):
+        rects = [Rect(r, *self.bp.room(r).rect) for r in f.rooms]
+        for key, st in (("down", f.stair_down), ("up", f.stair_up)):
+            if st:
+                rects.append(Rect(key, *st))
+        return rects
+
+    def test_footprints_keep_a_clear_cell_between_them(self):
         for f in self.bp.floors:
-            rooms = [self.bp.room(r) for r in f.rooms]
-            total = sum(r.angle_end - r.angle_start for r in rooms)
-            self.assertLessEqual(total, 360.0 + 1e-6)
-            for a, b in zip(rooms, rooms[1:]):
-                self.assertAlmostEqual(a.angle_end, b.angle_start, places=2)
+            rects = self._footprints(f)
+            for a, b in itertools.combinations(rects, 2):
+                self.assertFalse(a.intersects(b, margin=1), f"floor {f.index}: {a.key} touches {b.key}")
+            owned = {c for r in rects for c in r.cells()}
+            self.assertFalse(owned & {tuple(c) for c in f.corridors}, "corridor runs through a room")
+
+    def test_every_room_is_reachable(self):
+        """Flood through corridors and doors from the stair (or the front door)."""
+        for f in self.bp.floors:
+            rects = self._footprints(f)
+            corridors = {tuple(c) for c in f.corridors}
+            doors = [tuple(d) for r in f.rooms for d in self.bp.room(r).doors] + [tuple(d) for d in f.doors]
+            owner = {c: r.key for r in rects for c in r.cells()}
+            links, fronts = {}, {}
+            for ox, oy, ix, iy in doors:
+                self.assertIn((ox, oy), corridors)
+                links.setdefault((ox, oy), set()).add(owner[(ix, iy)])
+                fronts.setdefault(owner[(ix, iy)], set()).add((ox, oy))
+            start = next(iter(corridors), None)
+            if start is None:
+                self.assertEqual(len(rects), 1)
+                continue
+            # Walk corridors, and through a room from any of its doors to the others.
+            seen, stack, reached = set(), [start], set()
+            while stack:
+                c = stack.pop()
+                if c in seen:
+                    continue
+                seen.add(c)
+                for room in links.get(c, ()):
+                    reached.add(room)
+                    stack.extend(fronts[room])
+                stack.extend(n for n in ((c[0] + 1, c[1]), (c[0] - 1, c[1]), (c[0], c[1] + 1), (c[0], c[1] - 1)) if n in corridors)
+            self.assertEqual(reached, {r.key for r in rects}, f"floor {f.index}")
+
+    def test_spiral_stairs_line_up(self):
+        for lower, upper in zip(self.bp.floors, self.bp.floors[1:]):
+            self.assertIsNotNone(lower.stair_up)
+            self.assertEqual(lower.stair_up, upper.stair_down)
+        self.assertIsNone(self.bp.floors[0].stair_down)
+        self.assertIsNone(self.bp.floors[-1].stair_up)
+
+    def test_front_door(self):
+        exits = self.bp.floors[0].exits
+        self.assertEqual(len(exits), 1)
+        gate = Rect("gate", *self.bp.room("gate").rect)
+        self.assertIn(tuple(exits[0][2:]), gate.cells())
+
+    def test_svg_is_well_formed(self):
+        from xml.dom.minidom import parseString
+
+        from towergen.render import to_svg
+
+        parseString(to_svg(self.bp))
 
     def test_heavy_rooms_sink(self):
         self.assertLess(self.bp.room("forge").floor, self.bp.room("library").floor)

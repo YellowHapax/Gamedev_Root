@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 ANCHORS = (None, "ground", "top")
+SHAPES = ("rect", "round")
 EDGE_KINDS = ("adjacent", "separate")
 
 
@@ -19,8 +20,12 @@ class Room:
     height_pref: float | None = None
     # Hard constraint: pin to the ground floor or the top floor.
     anchor: str | None = None
+    # Footprint: "rect" rooms or "round" turret rooms.
+    shape: str = "rect"
 
     def __post_init__(self) -> None:
+        if self.shape not in SHAPES:
+            raise ValueError(f"room {self.id!r}: shape must be one of {SHAPES}")
         if self.area <= 0:
             raise ValueError(f"room {self.id!r}: area must be positive")
         if self.anchor not in ANCHORS:
@@ -49,15 +54,14 @@ class TowerSpec:
     base_radius: float = 9.0
     # Fractional radius reduction from the ground floor to the top floor.
     taper: float = 0.3
-    # Stair core + ring corridor; rooms occupy the annulus outside it.
-    core_radius: float = 2.0
     floor_height: float = 4.0
-    # Fraction of the annulus usable as room area (walls, windows, etc.).
-    efficiency: float = 0.85
+    # Plan grid resolution in metres (1.5 m = the classic 5 ft square).
+    cell_size: float = 1.5
+    # Fraction of the floor disc usable as room area (the rest is walls,
+    # corridors, stairs and rock).
+    efficiency: float = 0.6
     # Extra capacity demanded over the total room area when sizing the tower.
     slack: float = 0.1
-    # Angle (degrees) the spiral stair sweeps while climbing one floor.
-    stair_sweep: float = 90.0
     min_floors: int = 1
     max_floors: int = 64
 
@@ -69,7 +73,7 @@ class TowerSpec:
         import math
 
         r = self.radius(floor, num_floors)
-        return max(0.0, self.efficiency * math.pi * (r * r - self.core_radius ** 2))
+        return self.efficiency * math.pi * r * r
 
 
 @dataclass

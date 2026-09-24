@@ -23,7 +23,8 @@ python -m unittest            # tests
 | 2. Hamiltonian convolution | `hamiltonian.py` | Each room gets a state `(z, u, v)` (height and bearing around the tower). Stacked layers of damped Hamiltonian dynamics relax it under an energy `V(x)`. See below. |
 | 3. Floor discretization | `floors.py` | Sizes the tower (tapered floor capacity), fills floors in embedded-height order, then runs Metropolis annealing on a discrete Hamiltonian (adjacency, separation, gravity, preference, overflow). |
 | 4. Hamiltonian-path circulation | `circulation.py` | One route visits every room exactly once. Held–Karp solves each floor exactly (nearest-neighbour + 2-opt above 12 rooms per floor). Each floor's entry is conditioned on where the stair from the previous floor ended. |
-| 5. Layout | `blueprint.py` | Rooms become annular wedges around a stair core, laid out in route order. The spiral stair climbs `stair_sweep`° from each floor's exit to the next floor's landing. |
+| 5. Floor plans | `plan.py` | Each floor is planned on a grid (`cell_size`, default 1.5 m). A planar Hamiltonian convolution places room footprints, pulled by springs along the route, adjacency edges and related rooms on the floor below. Footprints are then snapped to the grid with a clear cell between rooms. A* corridors link stair → rooms in route order → stair, with doors at each end. Each floor's up-stair becomes the next floor's down-stair, so the spiral stairs line up. The entrance gets an exterior door. |
+| 6. Rendering | `render.py` | SVG in a battle-map style: a rock mass around each floor, tiled floors, walls, wooden doors, spiral stairs, simple furniture chosen by room `kind`, and a side elevation. |
 
 ### The Hamiltonian convolution
 
@@ -48,11 +49,11 @@ shallow minima.
 ```json
 {
   "name": "Wizard's Spire",
-  "tower": {"base_radius": 9, "taper": 0.35, "core_radius": 2.2, "floor_height": 4.5},
+  "tower": {"base_radius": 9, "taper": 0.35, "floor_height": 4.5},
   "rooms": [
     {"id": "gate",  "kind": "entrance", "area": 30, "anchor": "ground"},
     {"id": "forge", "kind": "workshop", "area": 30, "weight": 3.0},
-    {"id": "study", "kind": "study",    "area": 25, "height_pref": 0.75}
+    {"id": "study", "kind": "study",    "area": 25, "height_pref": 0.75, "shape": "round"}
   ],
   "edges": [
     {"a": "gate", "b": "forge", "weight": 1},
@@ -61,15 +62,24 @@ shallow minima.
 }
 ```
 
-Tower options (`TowerSpec`): `base_radius`, `taper`, `core_radius`,
-`floor_height`, `efficiency`, `slack`, `stair_sweep`, `min_floors`,
-`max_floors`. A room of kind `entrance` is where the route starts.
+Tower options (`TowerSpec`): `base_radius`, `taper`, `floor_height`,
+`cell_size`, `efficiency`, `slack`, `min_floors`, `max_floors`.
+
+Rooms take `shape` (`rect` or `round` for turret rooms). A room of kind
+`entrance` is where the route starts, and it gets the front door. These kinds
+get furniture: `entrance`, `military`, `service`, `social`, `workshop`,
+`study`, `vault`, `private`, `arcane`, `utility`. Any other kind gets a table.
 
 ### Output
 
 `<name>.blueprint.json` contains:
 
-- floors: elevation, radius, capacity, load, stair landing and exit angles
-- rooms: floor, wedge angles and radii, position along the route
+Coordinates are grid cells with the tower axis at (0, 0), x east and y north.
+A rect `[x, y, w, h]` covers cells `x..x+w-1, y..y+h-1`. A door
+`[ox, oy, ix, iy]` sits on the wall edge between an outside cell and an inside
+cell. The file contains:
+
+- floors: elevation, radius, capacity, load, stair rects (down and up), corridor cells, stair doors, and exterior doors
+- rooms: floor, shape, rect, doors, position along the route
 - the full route
 - metrics: energy traces, which adjacency and separation edges were satisfied, and the raw embedding

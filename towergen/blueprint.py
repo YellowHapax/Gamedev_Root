@@ -1,4 +1,9 @@
-"""End-to-end pipeline: program graph -> tower blueprint."""
+"""End-to-end pipeline: program graph -> tower blueprint.
+
+All plan coordinates are grid cells (Blueprint.cell_size metres each), with the
+tower axis at (0, 0), x east and y north. A rect is [x, y, w, h] covering cells
+x..x+w-1, y..y+h-1.
+"""
 
 from __future__ import annotations
 
@@ -8,6 +13,7 @@ from .circulation import plan_circulation
 from .floors import anneal, discrete_energy, initial_floors, size_tower
 from .graph import ProgramGraph
 from .hamiltonian import HamiltonianWeights, bearing, convolve
+from .plan import FloorPlan, Rect, plan_floors
 
 
 @dataclass
@@ -15,24 +21,28 @@ class PlacedRoom:
     id: str
     kind: str
     area: float
+    shape: str
     floor: int
     route_index: int  # position along the global Hamiltonian path
-    angle_start: float  # degrees, counter-clockwise from +x
-    angle_end: float
-    inner_radius: float
-    outer_radius: float
+    rect: list[int]  # [x, y, w, h] in cells
+    # Each door is [outside_x, outside_y, inside_x, inside_y]: it sits on the
+    # wall edge between those two cells.
+    doors: list[list[int]] = field(default_factory=list)
 
 
 @dataclass
 class Floor:
     index: int
     elevation: float
-    radius: float
+    radius: float  # metres
     capacity: float
     load: float
-    landing_angle: float  # where the stair from below arrives
-    exit_angle: float  # where the stair to the floor above departs
-    rooms: list[str] = field(default_factory=list)
+    rooms: list[str]
+    stair_down: list[int] | None  # [x, y, w, h] of the spiral stair from below
+    stair_up: list[int] | None
+    corridors: list[list[int]]  # corridor cells [x, y]
+    doors: list[list[int]]  # stair doors, same format as PlacedRoom.doors
+    exits: list[list[int]]  # exterior doors [outside_x, outside_y, inside_x, inside_y]
 
 
 @dataclass
@@ -40,7 +50,7 @@ class Blueprint:
     name: str
     num_floors: int
     height: float
-    core_radius: float
+    cell_size: float
     floors: list[Floor]
     rooms: list[PlacedRoom]
     route: list[str]
@@ -51,16 +61,6 @@ class Blueprint:
 
     def room(self, room_id: str) -> PlacedRoom:
         return next(r for r in self.rooms if r.id == room_id)
-
-
-def _overlap(a: PlacedRoom, b: PlacedRoom) -> bool:
-    """Do two wedges share any bearing (i.e. stack vertically)?"""
-
-    def arcs(r: PlacedRoom) -> list[tuple[float, float]]:
-        s, e = r.angle_start % 360.0, r.angle_start % 360.0 + (r.angle_end - r.angle_start)
-        return [(s, min(e, 360.0)), (0.0, e - 360.0)] if e > 360.0 else [(s, e)]
-
-    return any(s1 < e2 and s2 < e1 for s1, e1 in arcs(a) for s2, e2 in arcs(b))
 
 
 def generate(
@@ -85,46 +85,44 @@ def generate(
     # 3. Circulation: Hamiltonian path through every room.
     routes = plan_circulation(graph, floors, embedding, num_floors)
 
-    # 4. Lay rooms out as wedges around the core, in route order; the spiral
-    #    stair climbs from each floor's exit to the next floor's landing.
+    # 4. Grid floor plans: rooms, aligned spiral stairs, corridors, doors.
+    plans = plan_floors(graph, floors, routes, embedding, num_floors)
+
+    route_ids = [graph.rooms[i].id for route in routes for i in route]
     placed: dict[str, PlacedRoom] = {}
     out_floors: list[Floor] = []
-    route_ids: list[str] = []
-    angle = 0.0
-    for f, route in enumerate(routes):
-        cap = spec.capacity(f, num_floors)
-        load = sum(graph.rooms[i].area for i in route)
-        radius = spec.radius(f, num_floors)
-        landing = angle
+    for plan, route in zip(plans, routes):
+        doors: dict[str, list[list[int]]] = {}
+        for (ox, oy), (ix, iy), key in plan.doors:
+            doors.setdefault(key, []).append([ox, oy, ix, iy])
         for i in route:
             room = graph.rooms[i]
-            span = 360.0 * room.area / max(cap, load)
             placed[room.id] = PlacedRoom(
                 id=room.id,
                 kind=room.kind,
                 area=room.area,
-                floor=f,
-                route_index=len(route_ids),
-                angle_start=round(angle, 3),
-                angle_end=round(angle + span, 3),
-                inner_radius=spec.core_radius,
-                outer_radius=round(radius, 3),
+                shape=room.shape,
+                floor=plan.index,
+                route_index=route_ids.index(room.id),
+                rect=plan.rooms[room.id].to_list(),
+                doors=doors.get(room.id, []),
             )
-            route_ids.append(room.id)
-            angle += span
+        stair_doors = [d for k, ds in doors.items() if k.startswith("stair") for d in ds]
         out_floors.append(
             Floor(
-                index=f,
-                elevation=f * spec.floor_height,
-                radius=round(radius, 3),
-                capacity=round(cap, 2),
-                load=round(load, 2),
-                landing_angle=round(landing % 360.0, 3),
-                exit_angle=round(angle % 360.0, 3),
+                index=plan.index,
+                elevation=plan.index * spec.floor_height,
+                radius=round(spec.radius(plan.index, num_floors), 3),
+                capacity=round(spec.capacity(plan.index, num_floors), 2),
+                load=round(sum(graph.rooms[i].area for i in route), 2),
                 rooms=[graph.rooms[i].id for i in route],
+                stair_down=plan.stair_down.to_list() if plan.stair_down else None,
+                stair_up=plan.stair_up.to_list() if plan.stair_up else None,
+                corridors=sorted([list(c) for c in plan.corridors]),
+                doors=stair_doors,
+                exits=[[o[0], o[1], i[0], i[1]] for o, i, _ in plan.exits],
             )
         )
-        angle += spec.stair_sweep
 
     rooms = [placed[r.id] for r in graph.rooms]
     metrics = _metrics(graph, placed, trace, e_initial, e_final, embedding)
@@ -132,7 +130,7 @@ def generate(
         name=graph.name,
         num_floors=num_floors,
         height=num_floors * spec.floor_height,
-        core_radius=spec.core_radius,
+        cell_size=spec.cell_size,
         floors=out_floors,
         rooms=rooms,
         route=route_ids,
@@ -140,19 +138,33 @@ def generate(
     )
 
 
+def _rect(r: PlacedRoom) -> Rect:
+    return Rect(r.id, *r.rect)
+
+
+def _gap(a: Rect, b: Rect) -> int:
+    """Clear cells between two footprints (Chebyshev)."""
+    gx = max(a.x - (b.x + b.w), b.x - (a.x + a.w), 0)
+    gy = max(a.y - (b.y + b.h), b.y - (a.y + a.h), 0)
+    return max(gx, gy)
+
+
 def _metrics(graph, placed, trace, e_initial, e_final, embedding) -> dict:
-    adjacent_ok, separate_ok, detail = 0, 0, []
-    n_adj = n_sep = 0
+    adjacent_ok = separate_ok = n_adj = n_sep = 0
+    detail = []
     for e in graph.edges:
         a, b = placed[e.a], placed[e.b]
+        ra, rb = _rect(a), _rect(b)
         gap = abs(a.floor - b.floor)
-        stacked = gap == 1 and _overlap(a, b)
-        neighbours = gap == 0 and abs(a.route_index - b.route_index) == 1
+        stacked = gap == 1 and ra.intersects(rb)
+        near = gap == 0 and _gap(ra, rb) <= 2
         if e.kind == "adjacent":
             n_adj += 1
-            ok = neighbours or stacked
+            ok = near or stacked
             adjacent_ok += ok
-            relation = "neighbours" if neighbours else "stacked" if stacked else f"route distance {abs(a.route_index - b.route_index)}"
+            relation = "same floor, near" if near else "stacked" if stacked else (
+                f"same floor, {_gap(ra, rb)} cells apart" if gap == 0 else f"{gap} floor(s) apart"
+            )
         else:
             n_sep += 1
             ok = gap > 0 and not stacked
