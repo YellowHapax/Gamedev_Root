@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="590" viewBox="0 0 1000 590" font-family="sans-serif">
+<rect width="100%" height="100%" fill="#fbfaf6"/>
+<text x="20" y="26" font-size="16" font-weight="bold">Wizard's Spire</text>
+<rect x="200" y="16" width="10" height="10" fill="#e6b35c" stroke="#4a4030"/>
+<text x="214" y="25" font-size="10">arcane</text>
+<rect x="256" y="16" width="10" height="10" fill="#8fb9e0" stroke="#4a4030"/>
+<text x="270" y="25" font-size="10">entrance</text>
+<rect x="324" y="16" width="10" height="10" fill="#a8d08d" stroke="#4a4030"/>
+<text x="338" y="25" font-size="10">military</text>
+<rect x="392" y="16" width="10" height="10" fill="#e89a8f" stroke="#4a4030"/>
+<text x="406" y="25" font-size="10">private</text>
+<rect x="454" y="16" width="10" height="10" fill="#c3a6e0" stroke="#4a4030"/>
+<text x="468" y="25" font-size="10">service</text>
+<rect x="516" y="16" width="10" height="10" fill="#7fcfc4" stroke="#4a4030"/>
+<text x="530" y="25" font-size="10">social</text>
+<rect x="572" y="16" width="10" height="10" fill="#f0d78a" stroke="#4a4030"/>
+<text x="586" y="25" font-size="10">study</text>
+<rect x="622" y="16" width="10" height="10" fill="#d4a5c0" stroke="#4a4030"/>
+<text x="636" y="25" font-size="10">utility</text>
+<rect x="684" y="16" width="10" height="10" fill="#b8c47a" stroke="#4a4030"/>
+<text x="698" y="25" font-size="10">vault</text>
+<rect x="734" y="16" width="10" height="10" fill="#9fb3c8" stroke="#4a4030"/>
+<text x="748" y="25" font-size="10">workshop</text>
+<rect x="30.0" y="442.5" width="140.0" height="124.5" fill="#e8e2d4" stroke="#6b5d45"/>
+<text x="100.0" y="510.2" font-size="11" text-anchor="middle">F0 · 5 rooms</text>
+<rect x="38.2" y="315.0" width="123.7" height="124.5" fill="#e8e2d4" stroke="#6b5d45"/>
+<text x="100.0" y="382.8" font-size="11" text-anchor="middle">F1 · 4 rooms</text>
+<rect x="46.3" y="187.5" width="107.3" height="124.5" fill="#e8e2d4" stroke="#6b5d45"/>
+<text x="100.0" y="255.2" font-size="11" text-anchor="middle">F2 · 3 rooms</text>
+<rect x="54.5" y="60.0" width="91.0" height="124.5" fill="#e8e2d4" stroke="#6b5d45"/>
+<text x="100.0" y="127.8" font-size="11" text-anchor="middle">F3 · 2 rooms</text>
+<circle cx="330.0" cy="180.0" r="108.0" fill="#f1ede3" stroke="#6b5d45" stroke-width="2"/>
+<path d="M438.00,180.00 A108.00,108.00 0 0 0 394.84,93.63 L345.85,158.89 A26.40,26.40 0 0 1 356.40,180.00 Z" fill="#8fb9e0" stroke="#4a4030"><title>gate (30 m²)</title></path>
+<text x="390.1" y="150.0" font-size="9" text-anchor="middle" dominant-baseline="middle">0. gate</text>
+<path d="M394.84,93.63 A108.00,108.00 0 0 0 284.26,82.17 L318.82,156.08 A26.40,26.40 0 0 1 345.85,158.89 Z" fill="#a8d08d" stroke="#4a4030"><title>guardroom (35 m²)</title></path>
+<text x="336.9" y="113.2" font-size="9" text-anchor="middle" dominant-baseline="middle">1. guardroom</text>
+<path d="M284.26,82.17 A108.00,108.00 0 0 0 224.30,157.85 L304.16,174.58 A26.40,26.40 0 0 1 318.82,156.08 Z" fill="#a8d08d" stroke="#4a4030"><title>armory (30 m²)</title></path>
+<text x="277.3" y="138.3" font-size="9" text-anchor="middle" dominant-baseline="middle">2. armory</text>
+<path d="M224.30,157.85 A108.00,108.00 0 0 0 248.82,251.23 L310.16,197.41 A26.40,26.40 0 0 1 304.16,174.58 Z" fill="#9fb3c8" stroke="#4a4030"><title>forge (30 m²)</title></path>
+<text x="265.0" y="197.1" font-size="9" text-anchor="middle" dominant-baseline="middle">3. forge</text>
+<path d="M248.82,251.23 A108.00,108.00 0 0 0 321.56,287.67 L327.94,206.32 A26.40,26.40 0 0 1 310.16,197.41 Z" fill="#d4a5c0" stroke="#4a4030"><title>cistern (25 m²)</title></path>
+<text x="299.9" y="240.1" font-size="9" text-anchor="middle" dominant-baseline="middle">4. cistern</text>
+<circle cx="330.0" cy="180.0" r="26.4" fill="#d6cdb8" stroke="#4a4030"/>
+<circle cx="356.4" cy="180.0" r="4" fill="#2e8b57"/>
+<circle cx="327.9" cy="206.3" r="4" fill="#c0392b"/>
+<text x="330.0" y="62.0" font-size="12" text-anchor="middle" font-weight="bold">Floor 0 · +0 m · 150/203.37 m²</text>
+<circle cx="590.0" cy="180.0" r="95.4" fill="#f1ede3" stroke="#6b5d45" stroke-width="2"/>
+<path d="M685.11,187.45 A95.40,95.40 0 0 0 661.21,116.51 L609.71,162.43 A26.40,26.40 0 0 1 616.32,182.06 Z" fill="#c3a6e0" stroke="#4a4030"><title>larder (20 m²)</title></path>
+<text x="647.7" y="160.6" font-size="9" text-anchor="middle" dominant-baseline="middle">5. larder</text>
+<path d="M661.21,116.51 A95.40,95.40 0 0 0 538.65,99.60 L575.79,157.75 A26.40,26.40 0 0 1 609.71,162.43 Z" fill="#c3a6e0" stroke="#4a4030"><title>kitchen (35 m²)</title></path>
+<text x="598.3" y="119.7" font-size="9" text-anchor="middle" dominant-baseline="middle">6. kitchen</text>
+<path d="M538.65,99.60 A95.40,95.40 0 0 0 575.34,274.27 L585.94,206.09 A26.40,26.40 0 0 1 575.79,157.75 Z" fill="#7fcfc4" stroke="#4a4030"><title>hall (60 m²)</title></path>
+<text x="530.4" y="192.5" font-size="9" text-anchor="middle" dominant-baseline="middle">7. hall</text>
+<path d="M575.34,274.27 A95.40,95.40 0 0 0 673.00,227.03 L612.97,193.02 A26.40,26.40 0 0 1 585.94,206.09 Z" fill="#9fb3c8" stroke="#4a4030"><title>alchemy_lab (30 m²)</title></path>
+<text x="616.5" y="234.8" font-size="9" text-anchor="middle" dominant-baseline="middle">8. alchemy_lab</text>
+<circle cx="590.0" cy="180.0" r="26.4" fill="#d6cdb8" stroke="#4a4030"/>
+<circle cx="616.3" cy="182.1" r="4" fill="#2e8b57"/>
+<circle cx="613.0" cy="193.0" r="4" fill="#c0392b"/>
+<text x="590.0" y="62.0" font-size="12" text-anchor="middle" font-weight="bold">Floor 1 · +4.5 m · 145/155.85 m²</text>
+<circle cx="850.0" cy="180.0" r="82.8" fill="#f1ede3" stroke="#6b5d45" stroke-width="2"/>
+<path d="M890.82,107.96 A82.80,82.80 0 0 0 773.39,211.42 L825.58,190.02 A26.40,26.40 0 0 1 863.02,157.03 Z" fill="#f0d78a" stroke="#4a4030"><title>library (45 m²)</title></path>
+<text x="813.9" y="139.0" font-size="9" text-anchor="middle" dominant-baseline="middle">9. library</text>
+<path d="M773.39,211.42 A82.80,82.80 0 0 0 865.95,261.25 L855.08,205.91 A26.40,26.40 0 0 1 825.58,190.02 Z" fill="#f0d78a" stroke="#4a4030"><title>study (25 m²)</title></path>
+<text x="824.1" y="228.1" font-size="9" text-anchor="middle" dominant-baseline="middle">10. study</text>
+<path d="M865.95,261.25 A82.80,82.80 0 0 0 920.51,223.40 L872.48,193.84 A26.40,26.40 0 0 1 855.08,205.91 Z" fill="#b8c47a" stroke="#4a4030"><title>treasury (15 m²)</title></path>
+<text x="881.1" y="224.9" font-size="9" text-anchor="middle" dominant-baseline="middle">11. treasury</text>
+<circle cx="850.0" cy="180.0" r="26.4" fill="#d6cdb8" stroke="#4a4030"/>
+<circle cx="863.0" cy="157.0" r="4" fill="#2e8b57"/>
+<circle cx="872.5" cy="193.8" r="4" fill="#c0392b"/>
+<text x="850.0" y="62.0" font-size="12" text-anchor="middle" font-weight="bold">Floor 2 · +9 m · 85/114.21 m²</text>
+<circle cx="330.0" cy="440.0" r="70.2" fill="#f1ede3" stroke="#6b5d45" stroke-width="2"/>
+<path d="M366.80,380.22 A70.20,70.20 0 0 0 262.53,459.39 L304.63,447.29 A26.40,26.40 0 0 1 343.84,417.52 Z" fill="#e89a8f" stroke="#4a4030"><title>bedchamber (30 m²)</title></path>
+<text x="300.8" y="401.5" font-size="9" text-anchor="middle" dominant-baseline="middle">12. bedchamber</text>
+<path d="M262.53,459.39 A70.20,70.20 0 0 0 375.81,493.19 L347.23,460.00 A26.40,26.40 0 0 1 304.63,447.29 Z" fill="#e6b35c" stroke="#4a4030"><title>observatory (25 m²)</title></path>
+<text x="316.2" y="486.3" font-size="9" text-anchor="middle" dominant-baseline="middle">13. observatory</text>
+<circle cx="330.0" cy="440.0" r="26.4" fill="#d6cdb8" stroke="#4a4030"/>
+<circle cx="343.8" cy="417.5" r="4" fill="#2e8b57"/>
+<circle cx="347.2" cy="460.0" r="4" fill="#c0392b"/>
+<text x="330.0" y="322.0" font-size="12" text-anchor="middle" font-weight="bold">Floor 3 · +13.5 m · 55/78.46 m²</text>
+</svg>
