@@ -19,13 +19,15 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--layers", type=int, default=300, help="Hamiltonian convolution layers")
     args = ap.parse_args(argv)
 
-    graph = ProgramGraph.from_dict(json.loads(args.program.read_text()))
+    graph = ProgramGraph.from_dict(json.loads(args.program.read_text(encoding="utf-8")))
     bp = generate(graph, layers=args.layers, seed=args.seed)
 
     args.out.mkdir(parents=True, exist_ok=True)
     stem = args.program.stem
-    (args.out / f"{stem}.blueprint.json").write_text(json.dumps(bp.to_dict(), indent=2))
-    (args.out / f"{stem}.svg").write_text(to_svg(bp))
+    (args.out / f"{stem}.blueprint.json").write_text(
+        json.dumps(bp.to_dict(), indent=2), encoding="utf-8"
+    )
+    (args.out / f"{stem}.svg").write_text(to_svg(bp), encoding="utf-8")
     print(to_text(bp))
     print(f"wrote {args.out / (stem + '.blueprint.json')} and {args.out / (stem + '.svg')}")
     return 0

@@ -1,11 +1,15 @@
+import contextlib
+import io
 import itertools
 import json
 import random
+import tempfile
 import unittest
 from pathlib import Path
 
 from towergen import HamiltonianWeights, ProgramGraph, generate
 from towergen.circulation import heuristic_path, held_karp, path_cost
+from towergen.cli import main as cli_main
 from towergen.hamiltonian import convolve, gradient, initial_state, potential
 from towergen.plan import Rect
 
@@ -13,7 +17,7 @@ EXAMPLE = Path(__file__).resolve().parent.parent / "examples" / "wizard_tower.js
 
 
 def load_example() -> ProgramGraph:
-    return ProgramGraph.from_dict(json.loads(EXAMPLE.read_text()))
+    return ProgramGraph.from_dict(json.loads(EXAMPLE.read_text(encoding="utf-8")))
 
 
 class HamiltonianTests(unittest.TestCase):
@@ -148,6 +152,16 @@ class BlueprintTests(unittest.TestCase):
         from towergen.render import to_svg
 
         parseString(to_svg(self.bp))
+
+    def test_cli_writes_utf8_files(self):
+        # The SVG holds non-ASCII glyphs; Windows' default cp1252 cannot encode them.
+        with tempfile.TemporaryDirectory() as out:
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(cli_main([str(EXAMPLE), "-o", out]), 0)
+            svg = (Path(out) / "wizard_tower.svg").read_text(encoding="utf-8")
+            self.assertTrue(svg.rstrip().endswith("</svg>"))
+            bp = json.loads((Path(out) / "wizard_tower.blueprint.json").read_text(encoding="utf-8"))
+            self.assertEqual(bp["route"][0], "gate")
 
     def test_heavy_rooms_sink(self):
         self.assertLess(self.bp.room("forge").floor, self.bp.room("library").floor)
